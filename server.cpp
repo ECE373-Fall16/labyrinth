@@ -30,7 +30,7 @@ using namespace std;
 sqlite3 *db;
 int playerCount=1;
 int game_Number=0;
-const char* locationsArray[8]={"0", "0" ,"0" ,"0", "0" ,"0", "0" ,"0"};
+const char* locationsArray[8]={0, 0 ,0 ,0, 0 ,0, 0,0};
 
 
 class joinGame: public xmlrpc_c::method {
@@ -96,15 +96,14 @@ public:
 	search(g);
        vector<xmlrpc_c::value> arrayData;
 const char* f;
-int y;
+int y2;
 int d[8];
 	for(int i =0; i<8; i++){
-	f =locationsArray[i];
-std::stringstream ss(f);
-ss >> y;
-d[i]=y;
-std::cout << d[i];
-	
+
+
+	int s= atoi(locationsArray[i]);
+	cout <<s<<" ";
+
         arrayData.push_back(xmlrpc_c::value_int(y));
         }
 
