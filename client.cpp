@@ -5,8 +5,17 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/client_simple.hpp>
 #include <curses.h>
+#include <stdio.h>
+#include <stdlib.h>
 using namespace std;
 
+#define xmax 100
+#define ymax 100
+int playerNum =0;
+int gameNum=0;
+ int playerLocations[8];
+int mxmax = 0, mymax = 0;
+char maze[xmax][ymax];
 /////////////////////////////////
 void initialize() {
 	initscr();
@@ -22,17 +31,104 @@ void finalize() {
 }
 void delscreen(SCREEN *screen);
 
-int x = 10, y= 20;
+void loadMaze(const char *mazeFileName) {
+    int X = 0;
+    int Y = 0;
+    FILE *fp = NULL;
+   
+    for (Y = 0; Y <= ymax; Y++) {
+        for (X = 0; X <= xmax; X++) {
+            maze[X][Y] = ' ';
+        }
+}
+	X = 0;
+	Y = 0;
+    if ((fp = fopen(mazeFileName, "r")) == NULL) {
+        fprintf(stderr, "\n\tERROR ");
+        perror(mazeFileName);
+        fprintf(stderr, "\n");
+        exit(EXIT_FAILURE);
+    }
+    else {
+        while ((!feof(fp)) && (Y <= ymax)) {
+            X = 0;
+            while ((!feof(fp)) && (X <= xmax)) {
+                char temp;
+                fscanf(fp, "%c", &temp);
+                if (temp != '\n') {
+                    maze[Y][X++] = temp;
+                }
+                else break;
+            }
+	mxmax = X;
+	mymax = Y;
+            Y++;
+        }
+        fclose(fp);
+    }
+}
+
+void printMaze(){
+	for(int i = 0; i < xmax; i++){
+		for(int j = 0; j < ymax; j++){
+			mvprintw( i, j, "%c", maze[i][j]);
+		}
+	}
+	refresh();
+}
+
+int x = 10, y= 20, x2 = 15, y2 = 25;
 bool a = true;
 
 
 
+void move(){
+wmove( stdscr, x, y );
+waddch( stdscr, ACS_DIAMOND );
+int p= gameNum;	
+if(p==1){
+		wmove( stdscr, playerLocations[2], playerLocations[2] );
+		waddch( stdscr, ACS_BLOCK );
+		wmove( stdscr, playerLocations[4], playerLocations[5] );
+		waddch( stdscr, ACS_LANTERN );
+		wmove( stdscr, playerLocations[6], playerLocations[7] );
+		waddch( stdscr, ACS_PLUS );
+
+}
+else if( p==2){
+wmove( stdscr, playerLocations[0], playerLocations[1] );
+		waddch( stdscr, ACS_BLOCK );
+		wmove( stdscr, playerLocations[4], playerLocations[5] );
+		waddch( stdscr, ACS_LANTERN );
+		wmove( stdscr, playerLocations[6], playerLocations[7] );
+		waddch( stdscr, ACS_PLUS  );
+}
+
+else if( p==3){
+wmove( stdscr, playerLocations[0], playerLocations[1] );
+		waddch( stdscr, ACS_BLOCK );
+		wmove( stdscr, playerLocations[2], playerLocations[3] );
+		waddch( stdscr, ACS_LANTERN  );
+		wmove( stdscr, playerLocations[6], playerLocations[7] );
+		waddch( stdscr, ACS_PLUS );
+}
+else if( p==4){
+wmove( stdscr, playerLocations[0], playerLocations[1] );
+		waddch( stdscr, ACS_BLOCK );
+		wmove( stdscr, playerLocations[2], playerLocations[3] );
+		waddch( stdscr, ACS_LANTERN );
+		wmove( stdscr, playerLocations[4], playerLocations[5] );
+		waddch( stdscr,ACS_PLUS  );
+}
+
+
+
+}
+
 
 
 ///////////////////////////////////
-int playerNum =0;
-int gameNum=0;
- int playerLocations[8];
+
 main(int argc, char **) {
 
     if (argc-1 > 0) {
@@ -64,27 +160,33 @@ int ch;
 		
 		curs_set(0);
 		wclear( stdscr );
-		wmove( stdscr, x, y );
-		waddch( stdscr, ACS_DIAMOND );
+		printMaze();
+		move();
+		
 
 		wrefresh( stdscr );
 
 		ch = wgetch( stdscr);
 		switch (ch) {
 			case KEY_UP: 
+				wrefresh( stdscr );
+				mvaddch( y, x-1, ACS_DIAMOND );
 				x -= 1;
 				break;
 			case KEY_DOWN:
+				wrefresh( stdscr );
+				mvaddch( y, x+1, ACS_DIAMOND );
 				x += 1;
-
 				break;
 			case KEY_LEFT:
+				wrefresh( stdscr );
+				mvaddch( y-1, x, ACS_DIAMOND );
 				y -= 1;
-
 				break;			
 			case KEY_RIGHT:
+				wrefresh( stdscr );
+				mvaddch( y+1, x, ACS_DIAMOND );
 				y += 1;
-
 				break;
 			case KEY_BACKSPACE:
 				a = false;
