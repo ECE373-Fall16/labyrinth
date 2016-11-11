@@ -217,11 +217,7 @@ playerLocations[4]=x5;
 playerLocations[5]=x6;
 playerLocations[6]=x7;
 playerLocations[7]=x8;
-	for(int i=0; i<8;i++){
-		
-		cout<<playerLocations[i]<<" ";
-		}
-		cout<<endl;			
+			
 
 		if(!a) {
 			endwin();
@@ -231,6 +227,7 @@ playerLocations[7]=x8;
 	
 	finalize();
 
+		cout<<endl;
 
 
 

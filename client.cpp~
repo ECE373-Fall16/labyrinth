@@ -90,7 +90,7 @@ if(p==1){
 		wmove( stdscr, playerLocations[2], playerLocations[2] );
 		waddch( stdscr, ACS_BLOCK );
 		wmove( stdscr, playerLocations[4], playerLocations[5] );
-		waddch( stdscr, ACS_BULLET );
+		waddch( stdscr, ACS_LANTERN );
 		wmove( stdscr, playerLocations[6], playerLocations[7] );
 		waddch( stdscr, ACS_PLUS );
 
@@ -99,7 +99,7 @@ else if( p==2){
 wmove( stdscr, playerLocations[0], playerLocations[1] );
 		waddch( stdscr, ACS_BLOCK );
 		wmove( stdscr, playerLocations[4], playerLocations[5] );
-		waddch( stdscr, ACS_BULLET );
+		waddch( stdscr, ACS_LANTERN );
 		wmove( stdscr, playerLocations[6], playerLocations[7] );
 		waddch( stdscr, ACS_PLUS  );
 }
@@ -108,7 +108,7 @@ else if( p==3){
 wmove( stdscr, playerLocations[0], playerLocations[1] );
 		waddch( stdscr, ACS_BLOCK );
 		wmove( stdscr, playerLocations[2], playerLocations[3] );
-		waddch( stdscr, ACS_BULLET );
+		waddch( stdscr, ACS_LANTERN  );
 		wmove( stdscr, playerLocations[6], playerLocations[7] );
 		waddch( stdscr, ACS_PLUS );
 }
@@ -116,7 +116,7 @@ else if( p==4){
 wmove( stdscr, playerLocations[0], playerLocations[1] );
 		waddch( stdscr, ACS_BLOCK );
 		wmove( stdscr, playerLocations[2], playerLocations[3] );
-		waddch( stdscr, ACS_BULLET );
+		waddch( stdscr, ACS_LANTERN );
 		wmove( stdscr, playerLocations[4], playerLocations[5] );
 		waddch( stdscr,ACS_PLUS  );
 }
@@ -217,11 +217,7 @@ playerLocations[4]=x5;
 playerLocations[5]=x6;
 playerLocations[6]=x7;
 playerLocations[7]=x8;
-	for(int i=0; i<8;i++){
-		
-		cout<<playerLocations[i]<<" ";
-		}
-		cout<<endl;			
+		cout << x1 <<" "<<x2<<" "<<x3<<" "<<x4<<" "<<x5<<" "<<x6<<" "<<x7<<" "<<x8<<endl;		
 
 		if(!a) {
 			endwin();
@@ -230,7 +226,8 @@ playerLocations[7]=x8;
 	}
 	
 	finalize();
-
+f
+		cout<<endl;
 
 
 

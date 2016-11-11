@@ -30,7 +30,7 @@ using namespace std;
 sqlite3 *db;
 int playerCount=1;
 int game_Number=0;
-const char* locationsArray[8]={0, 0 ,0 ,0, 0 ,0, 0,0};
+int locationsArray[8]={0, 0 ,0 ,0, 0 ,0, 0,0};
 
 
 class joinGame: public xmlrpc_c::method {
@@ -95,16 +95,15 @@ public:
 	runUpdate(x,y,p,g);
 	search(g);
        vector<xmlrpc_c::value> arrayData;
+int s;
 const char* f;
-int y2;
-int d[8];
 	for(int i =0; i<8; i++){
 
 
-	int s= atoi(locationsArray[i]);
-	cout <<s<<" ";
+	//int s= atoi(locationsArray[i]);
+	//cout <<s<<" ";
 
-        arrayData.push_back(xmlrpc_c::value_int(y));
+        arrayData.push_back(xmlrpc_c::value_int(locationsArray[i]));
         }
 
 
@@ -135,9 +134,11 @@ static int callback(void* data, int argc, char **argv, char **azColName) // prin
    //fprintf(stderr, "%s: ", (const char*)data);
    for(int i=0; i<argc; i++){
       printf("%s = %s\n", azColName[i], argv[i]);
-	locationsArray[i]= argv[i+1];//load locations
+	//locationsArray[i]= argv[i+1];//load locations
+	
 	
    }
+cout <<endl;
 for(int i=0; i<8;i++){
 cout<< locationsArray[i]<<" ";
 }
@@ -194,7 +195,7 @@ if( rc != SQLITE_OK){
 }
 
 }
-
+/*
 void search(int g ){ // dumps out bases on game number 
 	if(!db)
 	return;
@@ -220,7 +221,45 @@ if( rc != SQLITE_OK){
 }
 
 }
+*/
 
+
+void search(int g){
+
+sqlite3_stmt *stmt;
+    int rc = sqlite3_prepare_v2(db, "SELECT PLAYER1X, PLAYER1Y,PLAYER2X,PLAYER2Y,PLAYER3X,PLAYER3Y,PLAYER4X,PLAYER4Y"
+                                    " FROM LOCATIONS"
+                                    " WHERE GAME_NUMBER = ?", -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+        throw string(sqlite3_errmsg(db));
+
+    rc = sqlite3_bind_int(stmt, 1, g);    // Using parameters ("?") is not
+    if (rc != SQLITE_OK) {                 // really necessary, but recommended
+        string errmsg(sqlite3_errmsg(db)); // (especially for strings) to avoid
+        sqlite3_finalize(stmt);            // formatting problems and SQL
+        throw errmsg;                      // injection attacks.
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_ROW && rc != SQLITE_DONE) {
+        string errmsg(sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        throw errmsg;
+    }
+    if (rc == SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        throw string("customer not found");
+    }
+
+   for(int i=0; i<8; i++){
+   
+    locationsArray[i] = sqlite3_column_int(stmt, i);
+cout<<locationsArray[i]<<" ";
+}
+cout<<endl;
+    sqlite3_finalize(stmt);
+
+}
 
 
 
