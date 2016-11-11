@@ -32,6 +32,7 @@ bool a = true;
 ///////////////////////////////////
 int playerNum =0;
 int gameNum=0;
+ int playerLocations[8];
 main(int argc, char **) {
 
     if (argc-1 > 0) {
@@ -94,8 +95,32 @@ int ch;
 				break;
 				
 		}
- 	 myClient.call(serverUrl, "server.getLocations", "iiii", &result, x, y,playerNum,gameNum);	
-			
+	xmlrpc_c::value result1;
+ 	 myClient.call(serverUrl, "server.getLocations", "iiii", &result1, x,y,playerNum,gameNum);	
+	xmlrpc_c::value_array array2(result1);
+        vector<xmlrpc_c::value> const param2Value(array2.vectorValueValue());
+int const x1 = xmlrpc_c::value_int(param2Value[0]);
+int const x2 = xmlrpc_c::value_int(param2Value[1]);
+int const x3 = xmlrpc_c::value_int(param2Value[2]);
+int const x4 = xmlrpc_c::value_int(param2Value[3]);
+int const x5 = xmlrpc_c::value_int(param2Value[4]);
+int const x6 = xmlrpc_c::value_int(param2Value[5]);
+int const x7 = xmlrpc_c::value_int(param2Value[6]);
+int const x8 = xmlrpc_c::value_int(param2Value[7]);
+playerLocations[0]=x1;
+playerLocations[1]=x2;
+playerLocations[2]=x3;
+playerLocations[3]=x4;
+playerLocations[4]=x5;
+playerLocations[5]=x6;
+playerLocations[6]=x7;
+playerLocations[7]=x8;
+	for(int i=0; i<8;i++){
+		
+		cout<<playerLocations[i]<<" ";
+		}
+		cout<<<<endl;			
+
 		if(!a) {
 			endwin();
 			break;
