@@ -85,8 +85,11 @@ int main() {
 		wmove( stdscr, x, y );
 		waddch( stdscr, ACS_DIAMOND );
 		wmove( stdscr, x2, y2 );
+		waddch( stdscr, ACS_BLOCK );
+		wmove( stdscr, x3, y2 );
 		waddch( stdscr, ACS_BULLET );
-		
+		wmove( stdscr, x2, y2 );
+		waddch( stdscr, ACS_CKBOARD );
 
 		wrefresh( stdscr );
 
@@ -111,26 +114,6 @@ int main() {
 				wrefresh( stdscr );
 				mvaddch( y+1, x, ACS_DIAMOND );
 				y += 1;
-				break;
-			case 'w': 
-				wrefresh( stdscr );
-				mvaddch( y, x-1, ACS_DIAMOND );
-				x2 -= 1;
-				break;
-			case 's':
-				wrefresh( stdscr );
-				mvaddch( y, x+1, ACS_DIAMOND );
-				x2 += 1;
-				break;
-			case 'a':
-				wrefresh( stdscr );
-				mvaddch( y-1, x, ACS_DIAMOND );
-				y2 -= 1;
-				break;			
-			case 'd':
-				wrefresh( stdscr );
-				mvaddch( y+1, x, ACS_DIAMOND );
-				y2 += 1;
 				break;
 			case KEY_BACKSPACE:
 				a = false;
