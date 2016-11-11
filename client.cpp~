@@ -4,10 +4,34 @@
 #include <xmlrpc-c/girerr.hpp>
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/client_simple.hpp>
-
+#include <curses.h>
 using namespace std;
 
-int
+/////////////////////////////////
+void initialize() {
+	initscr();
+	raw();
+	noecho();
+	nonl();
+	intrflush( stdscr, FALSE );
+	keypad( stdscr, TRUE );
+}
+
+void finalize() { 
+	endwin();
+}
+void delscreen(SCREEN *screen);
+
+int x = 10, y= 20;
+bool a = true;
+
+
+
+
+
+///////////////////////////////////
+int playerNum =0;
+int gameNum=0;
 main(int argc, char **) {
 
     if (argc-1 > 0) {
@@ -16,6 +40,8 @@ main(int argc, char **) {
     }
 
     try {
+
+
         xmlrpc_c::clientSimple myClient;
         xmlrpc_c::value result;
         string const serverUrl("http://localhost:8080/RPC2");
@@ -24,11 +50,62 @@ main(int argc, char **) {
         
         xmlrpc_c::value_array array1(result);
         vector<xmlrpc_c::value> const param1Value(array1.vectorValueValue());
-        int const int_value = xmlrpc_c::value_int(param1Value[0]);
-	double const double_value = xmlrpc_c::value_double(param1Value[1]);  
-	string const string_value = xmlrpc_c::value_string(param1Value[2]);
+        int const player_value = xmlrpc_c::value_int(param1Value[0]);
+	int const game_value = xmlrpc_c::value_double(param1Value[1]);  
+	playerNum=player_value;
+	gameNum= game_value;
+	cout << "The game number is " << player_value << " the playerNumber is " << game_value <<  endl;
 
-	cout << "The game number is " << int_value << " the playerNumber is " << double_value << "   " << string_value << endl;
+int ch;
+	initialize();
+
+	while (a) {
+		
+		curs_set(0);
+		wclear( stdscr );
+		wmove( stdscr, x, y );
+		waddch( stdscr, ACS_DIAMOND );
+
+		wrefresh( stdscr );
+
+		ch = wgetch( stdscr);
+		switch (ch) {
+			case KEY_UP: 
+				x -= 1;
+				break;
+			case KEY_DOWN:
+				x += 1;
+
+				break;
+			case KEY_LEFT:
+				y -= 1;
+
+				break;			
+			case KEY_RIGHT:
+				y += 1;
+
+				break;
+			case KEY_BACKSPACE:
+				a = false;
+				wrefresh( stdscr );
+				finalize();
+				break;
+			default:
+				break;
+				
+		}
+ 	 myClient.call(serverUrl, "server.getLocations", "iiii", &result, x, y,playerNum,gameNum);	
+			
+		if(!a) {
+			endwin();
+			break;
+		}
+	}
+	
+	finalize();
+
+
+
 
     } catch (exception const& e) {
         cerr << "Client threw error: " << e.what() << endl;

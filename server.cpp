@@ -20,7 +20,7 @@ void runInsert(int player, int x, int y);
 void runSearch( );
 static int callback(void* data, int argc, char **argv, char **azColName) ;
 void runUpdate( int x, int y, int player, int game);
-
+void locations( int g);
 using namespace std;
 
 #define SLEEP(seconds) sleep(seconds);
@@ -56,10 +56,10 @@ public:
 	runUpdate(x,y,playerCount++,game_Number-1);
 
         vector<xmlrpc_c::value> arrayData;
-        arrayData.push_back(xmlrpc_c::value_int(game_Number));
-        arrayData.push_back(xmlrpc_c::value_double(playerCount));
+        arrayData.push_back(xmlrpc_c::value_int(game_Number-1));
+        arrayData.push_back(xmlrpc_c::value_double(playerCount-1));
         arrayData.push_back(xmlrpc_c::value_string("test join"));
-        
+        cout<< " p "<<playerCount-1<<" game "<<game_Number-1<<endl;
         // Make an XML-RPC array out of it
         xmlrpc_c::value_array array1(arrayData);
         
@@ -72,7 +72,42 @@ public:
 };
 
 
+class getLocations: public xmlrpc_c::method {
+public:
+    getLocations() {
+        
+        this->_signature = "A:iiii";
+        this->_help = "This method updates the location of the player";
+    }
+    void
+    execute(xmlrpc_c::paramList const& paramList,
+            xmlrpc_c::value *   const  retvalP) {
+        
+        int const x(paramList.getInt(0));
+        int const y(paramList.getInt(1));
+	int const p(paramList.getInt(2));
+	int const g(paramList.getInt(3));
 
+        paramList.verifyEnd(4);
+	
+	runUpdate(x,y,g,p);
+
+       vector<xmlrpc_c::value> arrayData;
+        arrayData.push_back(xmlrpc_c::value_int(game_Number));
+        arrayData.push_back(xmlrpc_c::value_double(playerCount));
+        arrayData.push_back(xmlrpc_c::value_string("test join"));
+        
+        // Make an XML-RPC array out of it
+        xmlrpc_c::value_array array1(arrayData);
+        
+        *retvalP = array1;
+	locations(p);
+//runSearch();
+        // Sometimes, make it look hard (so client can see what it's like
+        // to do an RPC that takes a while).
+        
+    }
+};
 
 
 
@@ -143,9 +178,9 @@ if( rc != SQLITE_OK){
 	sqlite3_free(zErrMsg);
 }
 
-
-
 }
+
+
 
 void runInsert(int player, int x, int y){
 	if(!db)
@@ -178,6 +213,29 @@ fprintf(stdout, "Insert Run\n");
 
 }
 
+void locations( int g){
+	if(!db)
+	return;
+char *zErrMsg;
+sqlite3_stmt *stmt;
+const char *pzTest;
+const char *szSQL;
+
+
+szSQL="SELECT * from LOCATIONS where GAME_NUMBER=?";
+
+   
+int rc = sqlite3_prepare(db, szSQL, strlen(szSQL),&stmt,&pzTest);
+if(rc== SQLITE_OK){
+sqlite3_bind_int(stmt,1,g);
+
+
+}
+sqlite3_step(stmt);
+sqlite3_finalize(stmt);
+fprintf(stdout, "select\n");
+
+}
 
 void deleteEverything(int game){
 
@@ -253,9 +311,10 @@ runSearch();
 
      
 	xmlrpc_c::methodPtr const sampleJoinGame(new joinGame);
-       
+       xmlrpc_c::methodPtr const sampleGetLocations(new getLocations);
+
 	myRegistry.addMethod("server.joinGame", sampleJoinGame);
-        
+        myRegistry.addMethod("server.getLocations", sampleGetLocations);
         xmlrpc_c::serverAbyss myAbyssServer(
             xmlrpc_c::serverAbyss::constrOpt()
             .registryP(&myRegistry)
