@@ -13,7 +13,7 @@
 #include <pthread.h>
 
 #include <string>
-#include <sstream>
+
 #include "xmlrpc-c/base.hpp"
 #include "xmlrpc-c/registry.hpp"
 #include "xmlrpc-c/server_abyss.hpp"
@@ -30,7 +30,7 @@ using namespace std;
 sqlite3 *db;
 int playerCount=1;
 int game_Number=0;
-const char* locationsArray[8]={0, 0 ,0 ,0, 0 ,0, 0 ,0};
+const char* locationsArray[8]={"0", "0" ,"0" ,"0", "0" ,"0", "0" ,"0"};
 
 
 class joinGame: public xmlrpc_c::method {
@@ -95,13 +95,20 @@ public:
 	runUpdate(x,y,p,g);
 	search(g);
        vector<xmlrpc_c::value> arrayData;
-/*
+const char* f;
+int y;
+int d[8];
 	for(int i =0; i<8; i++){
-	int s =atoi(locationsArray[i]);
-	cout<<s<<" ";
-        arrayData.push_back(xmlrpc_c::value_int(s));
+	f =locationsArray[i];
+std::stringstream ss(f);
+ss >> y;
+d[i]=y;
+std::cout << d[i];
+	
+        arrayData.push_back(xmlrpc_c::value_int(y));
         }
-*/
+
+
         cout<<endl;
         // Make an XML-RPC array out of it
         xmlrpc_c::value_array array1(arrayData);
@@ -129,16 +136,16 @@ static int callback(void* data, int argc, char **argv, char **azColName) // prin
    //fprintf(stderr, "%s: ", (const char*)data);
    for(int i=0; i<argc; i++){
       printf("%s = %s\n", azColName[i], argv[i]);
-	//locationsArray[i]= argv[i+1];//load locations
+	locationsArray[i]= argv[i+1];//load locations
 	
    }
-
 for(int i=0; i<8;i++){
 cout<< locationsArray[i]<<" ";
 }
 	cout<<endl;
    return 0;
 }
+
 void runUpdate( int x, int y, int player, int game){ // updates database
 	if(!db)
 	return;
@@ -166,7 +173,6 @@ else
 fprintf(stdout, "Update Failure\n");
 
 sqlite3_step(stmt);
-for
 sqlite3_finalize(stmt);
 
 
