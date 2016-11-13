@@ -256,7 +256,7 @@ sqlite3_stmt *stmt;
     locationsArray[i] = sqlite3_column_int(stmt, i);
 cout<<locationsArray[i]<<" ";
 }
-endl;
+cout<<endl;
     sqlite3_finalize(stmt);
 
 }

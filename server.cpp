@@ -195,33 +195,7 @@ if( rc != SQLITE_OK){
 }
 
 }
-/*
-void search(int g ){ // dumps out bases on game number 
-	if(!db)
-	return;
-char *zErrMsg=0;
-int rc;
-const char* sql;
-string sql_string;
 
-ostringstream ss;
-ss <<g;
-string ga = ss.str();
-const char* data= "Callback function called";
-sql_string ="SELECT * from LOCATIONS where GAME_NUMBER =?";
-while(sql_string.find("?") != string::npos){
-	sql_string.replace(sql_string.find("?"),3,ga);
-}
-cout<<sql_string<<endl;
-sql= sql_string.c_str();
-rc = sqlite3_exec(db, sql, callback, (void*)data, &zErrMsg);
-if( rc != SQLITE_OK){
-	fprintf(stderr, "SQL error %s\n", zErrMsg);
-	sqlite3_free(zErrMsg);
-}
-
-}
-*/
 
 
 void search(int g){

@@ -82,7 +82,7 @@ bool a = true;
 
 
 
-void move(){
+void move(){ // move the other  players
 wmove( stdscr, x, y );
 waddch( stdscr, ACS_DIAMOND );
 int p= gameNum;	
@@ -155,18 +155,21 @@ main(int argc, char **) {
 
 int ch;
 	initialize();
-
+loadMaze("hello.txt");
 	while (a) {
 		
 		curs_set(0);
 		wclear( stdscr );
 		printMaze();
-		move();
+		move(); // move the other players
 		
 
 		wrefresh( stdscr );
 
-		ch = wgetch( stdscr);
+		cbreak();
+		timeout(500);
+
+		ch = wgetch( stdscr); // look for key input to move
 		switch (ch) {
 			case KEY_UP: 
 				wrefresh( stdscr );
@@ -201,7 +204,7 @@ int ch;
  	 myClient.call(serverUrl, "server.getLocations", "iiii", &result1, x,y,playerNum,gameNum);	
 	xmlrpc_c::value_array array2(result1);
         vector<xmlrpc_c::value> const param2Value(array2.vectorValueValue());
-int const x1 = xmlrpc_c::value_int(param2Value[0]);
+int const x1 = xmlrpc_c::value_int(param2Value[0]); // get other players locations from return array
 int const x2 = xmlrpc_c::value_int(param2Value[1]);
 int const x3 = xmlrpc_c::value_int(param2Value[2]);
 int const x4 = xmlrpc_c::value_int(param2Value[3]);
