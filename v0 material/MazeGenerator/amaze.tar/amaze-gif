@@ -1,0 +1,1 @@
+./amaze 40 69 >maz~tmp&&asciitopgm `wc -lL maz~tmp`|convert - maze.gif&&rm maz~tmp

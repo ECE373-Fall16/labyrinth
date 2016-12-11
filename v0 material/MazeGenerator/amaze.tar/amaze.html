@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>amaze.c</title>
+<meta name="Generator" content="SciTE - www.Scintilla.org" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+.S0 {
+	color: #808080;
+}
+.S1 {
+	color: #007F00;
+}
+.S4 {
+	color: #007F7F;
+}
+.S5 {
+	font-weight: bold;
+	color: #00007F;
+}
+.S6 {
+	color: #7F007F;
+}
+.S7 {
+	color: #7F007F;
+}
+.S9 {
+	color: #7F7F00;
+}
+.S10 {
+	font-weight: bold;
+	color: #000000;
+}
+span {
+	color: #000000;
+}
+</style>
+</head>
+<body bgcolor="#FFFFFF">
+<pre><span class="S1">/* amaze: make random mazes by walking around aimlessly</span>
+
+<span class="S1">Copyright (C) 2008 Henry Kroll www.thenerdshow.com</span>
+
+<span class="S1">    . You might find stuff like this in the Public Domain.</span>
+<span class="S1">    . I made this as a fun exercise, without consulting them.</span>
+<span class="S1">    . I am not a programmer. This could be an error trove!</span>
+<span class="S1">    . You are free use, copy and modify this "software."</span>
+
+<span class="S1">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" </span>
+<span class="S1">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="S1">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE </span>
+<span class="S1">ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE </span>
+<span class="S1">LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="S1">CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="S1">SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="S1">INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="S1">CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="S1">ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE </span>
+<span class="S1">POSSIBILITY OF SUCH DAMAGE.</span>
+
+<span class="S1">*/</span>
+
+<span class="S1">/*</span>
+<span class="S1">&gt;gcc -Wall -pedantic -O2 "amaze.c" -o "amaze"</span>
+<span class="S1">&gt;Exit code: 0</span>
+
+<span class="S1">&gt;./"amaze"</span>
+<span class="S1">Usage: ./amaze ROWS&lt;=39 COLS&lt;=39 [color 1-8] [wall char]</span>
+<span class="S1">Example: ./amaze 11 15 @</span>
+<span class="S1">&gt;Exit code: 1</span>
+
+<span class="S1">&gt;./amaze 6 35 3 @</span>
+<span class="S1">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
+<span class="S1">@       @                     @         @     @             @         @</span>
+<span class="S1">@ @@@ @ @ @@@@@@@ @@@@@ @@@@@ @ @@@@@@@@@ @ @@@ @ @@@ @@@@@@@ @@@@@ @@@</span>
+<span class="S1">@   @ @ @ @     @ @   @     @   @         @     @   @ @       @   @   @</span>
+<span class="S1">@ @@@ @ @@@ @@@ @ @ @ @@@@@ @@@@@ @@@@@@@@@@@@@@@ @ @ @ @@@@@@@@@ @@@ @</span>
+<span class="S1">@ @   @     @   @ @ @       @             @     @ @ @ @   @     @   @ @</span>
+<span class="S1">@@@ @@@@@@@@@ @@@@@ @@@@@@@@@ @@@@@@@@@@@@@ @@@ @ @ @@@@@ @@@ @ @ @ @ @</span>
+<span class="S1">@ @       @ @ @     @       @   @   @       @ @ @ @           @   @ @ @</span>
+<span class="S1">@ @@@@@@@ @ @ @@@ @@@ @@@@@ @@@ @ @ @ @@@@@@@ @ @@@@@@@ @@@@@@@@@@@@@ @</span>
+<span class="S1">@       @ @ @   @         @     @ @   @   @     @     @ @     @   @   @</span>
+<span class="S1">@@@@@@@ @ @ @@@ @@@@@@@@@@@@@@@@@ @@@@@ @@@ @@@@@ @@@ @@@ @@@ @ @ @ @ @</span>
+<span class="S1">@         @                       @               @       @     @   @ @</span>
+<span class="S1">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
+<span class="S1">&gt;Exit code: 0</span>
+
+<span class="S1">*/</span>
+<span class="S9">#include &lt;stdio.h&gt;</span>
+<span class="S9">#include &lt;stdlib.h&gt;</span>
+<span class="S9">#include &lt;sys/time.h&gt;</span>
+
+<span class="S9">#define MAX 69 </span><span class="S1">/* max rows and columns */</span>
+
+<span class="S5">void</span><span class="S0"> </span>usage<span class="S10">(</span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>a<span class="S10">){</span>
+<span class="S0">    </span>fprintf<span class="S10">(</span>stderr<span class="S10">,</span><span class="S6">"Usage: %s ROWS&lt;=%d COLS&lt;=%d [color 1-8]"</span>
+<span class="S0">    </span><span class="S6">" [wall char]\n"</span><span class="S10">,</span>a<span class="S10">[</span><span class="S4">0</span><span class="S10">],</span>MAX<span class="S10">,</span>MAX<span class="S10">);</span>
+<span class="S0">    </span>fprintf<span class="S10">(</span>stderr<span class="S10">,</span><span class="S6">"Example: %s 11 15 @\n"</span><span class="S10">,</span>a<span class="S10">[</span><span class="S4">0</span><span class="S10">]);</span>
+<span class="S0">    </span>exit<span class="S10">(</span><span class="S4">1</span><span class="S10">);</span>
+<span class="S10">}</span>
+<span class="S5">void</span><span class="S0"> </span>parsecmd<span class="S10">(</span><span class="S5">int</span><span class="S0"> </span>argc<span class="S10">,</span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>a<span class="S10">,</span><span class="S0"> </span><span class="S5">int</span><span class="S0"> </span><span class="S10">*</span>r<span class="S10">,</span><span class="S0"> </span><span class="S5">int</span><span class="S0"> </span><span class="S10">*</span>c<span class="S10">,</span><span class="S0"> </span><span class="S5">int</span><span class="S0"> </span><span class="S10">*</span>color<span class="S10">,</span><span class="S0"> </span><span class="S5">char</span><span class="S0"> </span><span class="S10">*</span>wall<span class="S10">){</span>
+<span class="S0">    </span><span class="S5">int</span><span class="S0"> </span>i<span class="S10">;</span>
+<span class="S0">    </span><span class="S10">*</span>color<span class="S10">=</span><span class="S4">0</span><span class="S10">;*</span>wall<span class="S10">=</span><span class="S4">0</span><span class="S10">;</span>
+<span class="S0">    </span><span class="S5">switch</span><span class="S0"> </span><span class="S10">(</span>argc<span class="S10">){</span>
+<span class="S0">        </span><span class="S5">case</span><span class="S0"> </span><span class="S4">5</span><span class="S10">:</span>
+<span class="S0">            </span>i<span class="S10">=</span>atoi<span class="S10">(</span>a<span class="S10">[</span><span class="S4">4</span><span class="S10">]);</span><span class="S0"> </span><span class="S1">/* strips bash quotes around variables '' */</span>
+<span class="S0">            </span><span class="S10">*</span>wall<span class="S10">=</span>a<span class="S10">[</span><span class="S4">4</span><span class="S10">][</span><span class="S4">0</span><span class="S10">];</span>
+<span class="S0">        </span><span class="S5">case</span><span class="S0"> </span><span class="S4">4</span><span class="S10">:</span>
+<span class="S0">            </span><span class="S10">*</span>color<span class="S10">=</span>atoi<span class="S10">(</span>a<span class="S10">[</span><span class="S4">3</span><span class="S10">]);</span>
+<span class="S0">            </span><span class="S5">if</span><span class="S10">(*</span>color<span class="S10">==</span><span class="S4">0</span><span class="S10">&amp;&amp;!*</span>wall<span class="S10">)*</span>wall<span class="S10">=</span>a<span class="S10">[</span><span class="S4">3</span><span class="S10">][</span><span class="S4">0</span><span class="S10">];</span>
+<span class="S0">            </span><span class="S5">if</span><span class="S10">(*</span>color<span class="S10">&lt;</span><span class="S4">1</span><span class="S10">||*</span>color<span class="S10">&gt;</span><span class="S4">8</span><span class="S10">)*</span>color<span class="S10">=</span><span class="S4">0</span><span class="S10">;</span>
+<span class="S0">        </span><span class="S5">case</span><span class="S0"> </span><span class="S4">3</span><span class="S10">:</span>
+<span class="S0">            </span><span class="S10">*</span>r<span class="S10">=</span>atoi<span class="S10">(</span>a<span class="S10">[</span><span class="S4">1</span><span class="S10">]);</span><span class="S0"> </span><span class="S1">/* no error checking */</span>
+<span class="S0">            </span><span class="S10">*</span>c<span class="S10">=</span>atoi<span class="S10">(</span>a<span class="S10">[</span><span class="S4">2</span><span class="S10">]);</span>
+<span class="S0">            </span><span class="S5">if</span><span class="S10">(!(*</span>r<span class="S10">&gt;</span><span class="S4">1</span><span class="S10">&amp;&amp;*</span>r<span class="S10">&lt;=</span>MAX<span class="S10">&amp;&amp;*</span>c<span class="S10">&gt;</span><span class="S4">1</span><span class="S10">&amp;&amp;*</span>c<span class="S10">&lt;=</span>MAX<span class="S10">))</span>usage<span class="S10">(</span>a<span class="S10">);</span>
+<span class="S0">            </span><span class="S5">break</span><span class="S10">;</span>
+<span class="S0">        </span><span class="S5">default</span><span class="S10">:</span><span class="S0"> </span>usage<span class="S10">(</span>a<span class="S10">);</span>
+<span class="S0">    </span><span class="S10">}</span>
+<span class="S10">}</span>
+<span class="S5">void</span><span class="S0"> </span>initrand<span class="S10">(){</span>
+<span class="S0">    </span><span class="S5">struct</span><span class="S0"> </span>timeval<span class="S0"> </span>tv<span class="S10">;</span><span class="S0"> </span><span class="S1">/* seed srand() */</span>
+<span class="S0">    </span>gettimeofday<span class="S10">(&amp;</span>tv<span class="S10">,</span><span class="S4">0</span><span class="S10">);</span><span class="S0"> </span><span class="S1">/* with something... */</span>
+<span class="S0">    </span>srand<span class="S10">((</span><span class="S5">unsigned</span><span class="S0"> </span><span class="S5">int</span><span class="S10">)</span>tv<span class="S10">.</span>tv_usec<span class="S10">);</span>
+<span class="S10">}</span>
+<span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>mazeinit<span class="S10">(</span><span class="S5">int</span><span class="S0"> </span>rows<span class="S10">,</span><span class="S5">int</span><span class="S0"> </span>cols<span class="S10">,</span><span class="S0"> </span><span class="S5">char</span><span class="S0"> </span>wall<span class="S10">){</span>
+<span class="S0">    </span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>a<span class="S10">=</span>malloc<span class="S10">((</span><span class="S4">2</span><span class="S10">*</span>rows<span class="S10">+</span><span class="S4">1</span><span class="S10">)*</span><span class="S5">sizeof</span><span class="S10">(</span><span class="S5">char</span><span class="S10">*));</span><span class="S0"> </span><span class="S1">/* 3x3 with overlap of 1 */</span>
+<span class="S0">    </span><span class="S5">int</span><span class="S0"> </span>i<span class="S10">,</span>j<span class="S10">;</span>
+<span class="S0">    </span><span class="S5">for</span><span class="S10">(</span>i<span class="S10">=</span><span class="S4">0</span><span class="S10">;</span>i<span class="S10">&lt;</span><span class="S4">2</span><span class="S10">*</span>rows<span class="S10">+</span><span class="S4">1</span><span class="S10">;</span>i<span class="S10">++){</span>
+<span class="S0">        </span><span class="S5">if</span><span class="S10">(!(</span>a<span class="S10">[</span>i<span class="S10">]=</span>malloc<span class="S10">(</span><span class="S4">2</span><span class="S10">*</span>cols<span class="S10">+</span><span class="S4">1</span><span class="S10">))){</span>
+<span class="S0">            </span>fprintf<span class="S10">(</span>stderr<span class="S10">,</span><span class="S6">"Out of memory.\n"</span><span class="S10">);</span>
+<span class="S0">            </span>exit<span class="S10">(</span><span class="S4">1</span><span class="S10">);</span>
+<span class="S0">        </span><span class="S10">}</span>
+<span class="S0">        </span><span class="S5">for</span><span class="S10">(</span>j<span class="S10">=</span><span class="S4">0</span><span class="S10">;</span>j<span class="S10">&lt;</span><span class="S4">2</span><span class="S10">*</span>cols<span class="S10">+</span><span class="S4">1</span><span class="S10">;</span>j<span class="S10">++)</span>
+<span class="S0">            </span>a<span class="S10">[</span>i<span class="S10">][</span>j<span class="S10">]=(</span>wall<span class="S10">)?</span>wall<span class="S10">:</span><span class="S7">'*'</span><span class="S10">;</span>
+<span class="S0">    </span><span class="S10">}</span>
+<span class="S0">    </span><span class="S5">return</span><span class="S0"> </span>a<span class="S10">;</span>
+<span class="S10">}</span>
+<span class="S5">void</span><span class="S0"> </span>mazestep<span class="S10">(</span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>a<span class="S10">,</span><span class="S5">int</span><span class="S0"> </span><span class="S10">*</span>rows<span class="S10">,</span><span class="S5">int</span><span class="S0"> </span><span class="S10">*</span>cols<span class="S10">,</span><span class="S5">int</span><span class="S0"> </span>r<span class="S10">,</span><span class="S5">int</span><span class="S0"> </span>c<span class="S10">){</span>
+<span class="S0">    </span><span class="S5">int</span><span class="S0"> </span>i<span class="S10">,</span>vector<span class="S10">[</span><span class="S4">3</span><span class="S10">][</span><span class="S4">2</span><span class="S10">];</span>
+<span class="S0">    </span><span class="S9">#define ROW vector[i][0]</span>
+<span class="S0">    </span><span class="S9">#define COL vector[i][1]</span>
+<span class="S0">    </span><span class="S5">while</span><span class="S10">(</span><span class="S4">1</span><span class="S10">){</span>
+<span class="S0">        </span>i<span class="S10">=</span><span class="S4">0</span><span class="S10">;</span><span class="S0"> </span><span class="S1">/* look around */</span>
+<span class="S0">        </span><span class="S5">if</span><span class="S10">(</span>r<span class="S10">&gt;</span><span class="S4">1</span><span class="S0">          </span><span class="S10">&amp;&amp;</span>a<span class="S10">[</span>r<span class="S10">-</span><span class="S4">2</span><span class="S10">][</span>c<span class="S10">]</span><span class="S0"> </span><span class="S10">!=</span><span class="S7">' '</span><span class="S10">){</span>ROW<span class="S10">=</span>r<span class="S10">-</span><span class="S4">2</span><span class="S10">;</span>COL<span class="S10">=</span>c<span class="S10">;</span>i<span class="S10">++;}</span>
+<span class="S0">        </span><span class="S5">if</span><span class="S10">(</span>r<span class="S10">&lt;*</span>rows<span class="S10">*</span><span class="S4">2</span><span class="S10">-</span><span class="S4">1</span><span class="S0">  </span><span class="S10">&amp;&amp;</span>a<span class="S10">[</span>r<span class="S10">+</span><span class="S4">2</span><span class="S10">][</span>c<span class="S10">]</span><span class="S0"> </span><span class="S10">!=</span><span class="S7">' '</span><span class="S10">){</span>ROW<span class="S10">=</span>r<span class="S10">+</span><span class="S4">2</span><span class="S10">;</span>COL<span class="S10">=</span>c<span class="S10">;</span>i<span class="S10">++;}</span>
+<span class="S0">        </span><span class="S5">if</span><span class="S10">(</span>c<span class="S10">&gt;</span><span class="S4">1</span><span class="S0">          </span><span class="S10">&amp;&amp;</span>a<span class="S10">[</span>r<span class="S10">][</span>c<span class="S10">-</span><span class="S4">2</span><span class="S10">]</span><span class="S0"> </span><span class="S10">!=</span><span class="S7">' '</span><span class="S10">){</span>ROW<span class="S10">=</span>r<span class="S10">;</span>COL<span class="S10">=</span>c<span class="S10">-</span><span class="S4">2</span><span class="S10">;</span>i<span class="S10">++;}</span>
+<span class="S0">        </span><span class="S5">if</span><span class="S10">(</span>c<span class="S10">&lt;*</span>cols<span class="S10">*</span><span class="S4">2</span><span class="S10">-</span><span class="S4">1</span><span class="S0">  </span><span class="S10">&amp;&amp;</span>a<span class="S10">[</span>r<span class="S10">][</span>c<span class="S10">+</span><span class="S4">2</span><span class="S10">]</span><span class="S0"> </span><span class="S10">!=</span><span class="S7">' '</span><span class="S10">){</span>ROW<span class="S10">=</span>r<span class="S10">;</span>COL<span class="S10">=</span>c<span class="S10">+</span><span class="S4">2</span><span class="S10">;</span>i<span class="S10">++;}</span>
+<span class="S0">        </span><span class="S5">if</span><span class="S10">(!</span>i<span class="S10">)</span><span class="S5">break</span><span class="S10">;</span><span class="S0"> </span><span class="S1">/* check for dead end */</span>
+<span class="S0">        </span>i<span class="S10">=(</span><span class="S5">int</span><span class="S10">)(</span>i<span class="S10">*(</span>rand<span class="S10">()/(</span>RAND_MAX<span class="S10">+</span><span class="S4">1.0</span><span class="S10">)));</span><span class="S0"> </span><span class="S1">/* choose a path */</span>
+<span class="S0">        </span>a<span class="S0"> </span><span class="S10">[(</span>ROW<span class="S10">+</span>r<span class="S10">)/</span><span class="S4">2</span><span class="S10">]</span><span class="S0">   </span><span class="S10">[(</span>COL<span class="S10">+</span>c<span class="S10">)/</span><span class="S4">2</span><span class="S10">]=</span><span class="S7">' '</span><span class="S10">;</span><span class="S0">    </span><span class="S1">/* knock out a wall */</span>
+<span class="S0">        </span>a<span class="S0"> </span><span class="S10">[</span>ROW<span class="S10">]</span><span class="S0">         </span><span class="S10">[</span>COL<span class="S10">]=</span><span class="S7">' '</span><span class="S10">;</span><span class="S0">          </span><span class="S1">/* clear to it */</span>
+<span class="S0">        </span>mazestep<span class="S10">(</span>a<span class="S10">,</span>rows<span class="S10">,</span>cols<span class="S10">,</span>ROW<span class="S10">,</span>COL<span class="S10">);</span><span class="S0">      </span><span class="S1">/* repeat */</span>
+<span class="S0">    </span><span class="S10">}</span>
+<span class="S10">}</span>
+<span class="S5">void</span><span class="S0"> </span>mazewalk<span class="S10">(</span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>a<span class="S10">,</span><span class="S5">int</span><span class="S0"> </span>rows<span class="S10">,</span><span class="S0"> </span><span class="S5">int</span><span class="S0"> </span>cols<span class="S10">){</span>
+<span class="S0">    </span><span class="S1">/* this starts at one side but you can start anywhere */</span>
+<span class="S0">    </span><span class="S1">/* there is a way out no matter where your exits are */</span>
+<span class="S0">    </span><span class="S5">int</span><span class="S0"> </span>i<span class="S10">,</span>r<span class="S10">,</span>c<span class="S10">;</span>
+<span class="S0">    </span>c<span class="S10">=</span>cols<span class="S10">|</span><span class="S4">1</span><span class="S10">;</span>
+<span class="S0">    </span>a<span class="S10">[</span><span class="S4">0</span><span class="S10">][</span>c<span class="S10">]=</span><span class="S7">' '</span><span class="S10">;</span>a<span class="S10">[</span><span class="S4">2</span><span class="S10">*</span>rows<span class="S10">][</span>c<span class="S10">]=</span><span class="S7">' '</span><span class="S10">;</span>
+<span class="S0">    </span>i<span class="S10">=(</span><span class="S5">int</span><span class="S10">)(</span><span class="S4">2</span><span class="S10">*(</span>rand<span class="S10">()/(</span>RAND_MAX<span class="S10">+</span><span class="S4">1.0</span><span class="S10">)));</span>
+<span class="S0">    </span>c<span class="S10">=(</span>i<span class="S10">)?</span><span class="S4">1</span><span class="S10">:</span><span class="S4">2</span><span class="S10">*</span>cols<span class="S10">-</span><span class="S4">1</span><span class="S10">;</span>r<span class="S10">=</span>rows<span class="S10">|</span><span class="S4">1</span><span class="S10">;</span>a<span class="S10">[</span>r<span class="S10">][</span>c<span class="S10">]=</span><span class="S7">' '</span><span class="S10">;</span>
+
+<span class="S0">    </span>mazestep<span class="S10">(</span>a<span class="S10">,&amp;</span>rows<span class="S10">,&amp;</span>cols<span class="S10">,</span>r<span class="S10">,</span>c<span class="S10">);</span>
+<span class="S10">}</span>
+<span class="S5">void</span><span class="S0"> </span>mazeprint<span class="S10">(</span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>a<span class="S10">,</span><span class="S5">int</span><span class="S0"> </span>rows<span class="S10">,</span><span class="S0"> </span><span class="S5">int</span><span class="S0"> </span>cols<span class="S10">,</span><span class="S0"> </span><span class="S5">int</span><span class="S0"> </span>color<span class="S10">){</span>
+<span class="S0">    </span><span class="S5">int</span><span class="S0"> </span>i<span class="S10">,</span>j<span class="S10">;</span>
+<span class="S0">    </span><span class="S5">for</span><span class="S10">(</span>i<span class="S10">=</span><span class="S4">0</span><span class="S10">;</span>i<span class="S10">&lt;</span><span class="S4">2</span><span class="S10">*</span>rows<span class="S10">+</span><span class="S4">1</span><span class="S10">;</span>i<span class="S10">++){</span>
+<span class="S0">        </span><span class="S5">for</span><span class="S10">(</span>j<span class="S10">=</span><span class="S4">0</span><span class="S10">;</span>j<span class="S10">&lt;</span><span class="S4">2</span><span class="S10">*</span>cols<span class="S10">+</span><span class="S4">1</span><span class="S10">;</span>j<span class="S10">++){</span>
+<span class="S0">            </span><span class="S5">if</span><span class="S10">(</span>color<span class="S10">&amp;&amp;</span>a<span class="S10">[</span>i<span class="S10">][</span>j<span class="S10">]!=</span><span class="S7">' '</span><span class="S10">)</span>
+<span class="S0">                </span><span class="S5">if</span><span class="S10">(</span>j<span class="S10">==</span><span class="S4">0</span><span class="S10">||</span>a<span class="S10">[</span>i<span class="S10">][</span>j<span class="S10">-</span><span class="S4">1</span><span class="S10">]==</span><span class="S7">' '</span><span class="S10">)</span><span class="S0"> </span><span class="S1">/* reduce control codes */</span>
+<span class="S0">                    </span>printf<span class="S10">(</span><span class="S6">"%c[4%dm"</span><span class="S10">,</span><span class="S4">27</span><span class="S10">,</span>color<span class="S10">-</span><span class="S4">1</span><span class="S10">);</span>
+<span class="S0">            </span><span class="S5">if</span><span class="S10">(</span>color<span class="S10">&amp;&amp;</span>a<span class="S10">[</span>i<span class="S10">][</span>j<span class="S10">]==</span><span class="S7">' '</span><span class="S10">&amp;&amp;</span>a<span class="S10">[</span>i<span class="S10">][</span>j<span class="S10">-</span><span class="S4">1</span><span class="S10">]!=</span><span class="S7">' '</span><span class="S10">)</span>printf<span class="S10">(</span><span class="S6">"%c[0m"</span><span class="S10">,</span><span class="S4">27</span><span class="S10">);</span>
+<span class="S0">            </span>printf<span class="S10">(</span><span class="S6">"%c"</span><span class="S10">,</span>a<span class="S10">[</span>i<span class="S10">][</span>j<span class="S10">]);</span>
+<span class="S0">        </span><span class="S10">}</span><span class="S0">       </span>
+<span class="S0">        </span><span class="S5">if</span><span class="S10">(</span>color<span class="S10">)</span>printf<span class="S10">(</span><span class="S6">"%c[0m"</span><span class="S10">,</span><span class="S4">27</span><span class="S10">);</span>
+<span class="S0">        </span>printf<span class="S10">(</span><span class="S6">"\n"</span><span class="S10">);</span>
+<span class="S0">    </span><span class="S10">}</span>
+<span class="S10">}</span>
+<span class="S5">void</span><span class="S0"> </span>mazefree<span class="S10">(</span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>a<span class="S10">,</span><span class="S5">int</span><span class="S0"> </span>rows<span class="S10">){</span>
+<span class="S0">    </span><span class="S5">int</span><span class="S0"> </span>i<span class="S10">;</span>
+<span class="S0">    </span><span class="S5">for</span><span class="S10">(</span>i<span class="S10">=</span><span class="S4">0</span><span class="S10">;</span>i<span class="S10">&lt;</span><span class="S4">2</span><span class="S10">*</span>rows<span class="S10">+</span><span class="S4">1</span><span class="S10">;</span>i<span class="S10">++)</span>
+<span class="S0">        </span>free<span class="S10">(</span>a<span class="S10">[</span>i<span class="S10">]);</span>
+<span class="S0">    </span>free<span class="S10">(</span>a<span class="S10">);</span>
+<span class="S10">}</span>
+
+<span class="S5">int</span><span class="S0"> </span>main<span class="S0"> </span><span class="S10">(</span><span class="S5">int</span><span class="S0"> </span>argc<span class="S10">,</span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>argv<span class="S10">){</span>
+<span class="S0">    </span><span class="S5">int</span><span class="S0"> </span>rows<span class="S10">,</span>cols<span class="S10">,</span>color<span class="S10">;</span><span class="S5">char</span><span class="S0"> </span><span class="S10">**</span>a<span class="S10">,</span>wall<span class="S10">;</span>
+<span class="S0">    </span>parsecmd<span class="S0">    </span><span class="S10">(</span>argc<span class="S10">,</span>argv<span class="S10">,&amp;</span>rows<span class="S10">,&amp;</span>cols<span class="S10">,&amp;</span>color<span class="S10">,&amp;</span>wall<span class="S10">);</span>
+<span class="S0">    </span><span class="S1">/* printf("rows %d cols %d color %d wall %d\n",rows,cols,color,wall); */</span>
+<span class="S0">    </span>initrand<span class="S10">();</span>
+a<span class="S10">=</span><span class="S0">  </span>mazeinit<span class="S0">    </span><span class="S10">(</span>rows<span class="S10">,</span>cols<span class="S10">,</span>wall<span class="S10">);</span>
+<span class="S0">    </span>mazewalk<span class="S0">    </span><span class="S10">(</span>a<span class="S10">,</span>rows<span class="S10">,</span>cols<span class="S10">);</span>
+<span class="S0">    </span>mazeprint<span class="S0">   </span><span class="S10">(</span>a<span class="S10">,</span>rows<span class="S10">,</span>cols<span class="S10">,</span>color<span class="S10">);</span>
+<span class="S0">    </span>mazefree<span class="S0">    </span><span class="S10">(</span>a<span class="S10">,</span>rows<span class="S10">);</span>
+<span class="S0">    </span><span class="S5">return</span><span class="S0"> </span><span class="S4">0</span><span class="S10">;</span>
+<span class="S10">}</span>
+<span class="S0"></span></pre>
+</body>
+</html>

@@ -1,0 +1,43 @@
+#include<stdio.h>
+#include<graphics.h>
+#include<process.h>
+#include<dos.h>
+#include<conio.h>
+#include<iostream.h>
+
+void main() {
+	int i = 250, j = 250, x = 0, y = -1, ch, gd = DETECT, gm;
+	initgraph(&gd, &gm, "C:\\TC\\BGI");
+
+	while (1) { //infinite loop
+		circle(i,j,30);
+		if(kbhit()) { //check if a key is pressed
+			ch = getch();
+			if(ch == 57) { //move up
+				x = 0;
+				y = -1;
+			}
+			if(ch == 61) { //move left
+				x = -1;
+				y = 0;
+			}
+			if(ch == 63) { //move right
+				x = 1;
+				y = 0;
+			}
+			if(ch == 62) { //move down
+				x = 0;
+				y = 1;
+			}
+			if(ch == 27) { //exit when esc pressed
+				exit(0);
+			}
+			
+			i += x;
+			j += y;
+	
+			delay(50);
+			cleardevice();
+		}
+	}
+}
